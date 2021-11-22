@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Matrix:
     def __init__(self, *args, **kwargs):
         """
@@ -43,13 +46,16 @@ class Matrix:
         Write the matrix to the given filename.
         TODO: implement
         """
+        rows = [" ".join([str(self._matrix[i][j]) for j in range(self._columns)]) for i in range(self._rows)]
+        with open(filename, 'w') as f:
+            f.write("\n".join(rows))
 
     def traspose(self):
         """
         Transpose the matrix.
         TODO: implement
         """
-        return [[row[i] for row in self._matrix] for i in range(len(self._matrix[0]))]
+        return [[row[i] for row in self._matrix] for i in range(self._columns)]
 
     @property
     def shape(self):
@@ -63,8 +69,7 @@ class Matrix:
         if self._columns != other._columns or self._rows != other._rows:
             raise ValueError("Matrices can only be added if the dimensions are the same")
 
-        return [[self._matrix[i][j] + other._matrix[i][j] for j in range(len(self._matrix[i]))] for i in
-                range(self._rows)]
+        return [[self._matrix[i][j] + other._matrix[i][j] for j in range(self._columns)] for i in range(self._rows)]
 
     def __mul__(self, other):
         """
@@ -73,7 +78,13 @@ class Matrix:
         If other is not a matrix (int, float) multiply all elements of the matrix to other.
         TODO: implement
         """
-        pass
+        if not isinstance(other, Matrix):
+            return [[self._matrix[i][j] * other for j in range(self._columns)] for i in range(self._rows)]
+
+        elif self._columns != other._columns or self._rows != other._rows:
+            raise ValueError("Matrices can only be added if the dimensions are the same")
+
+        return [[self._matrix[i][j] * other._matrix[i][j] for j in range(self._columns)] for i in range(self._rows)]
 
     def __matmul__(self, other):
         """
@@ -81,8 +92,11 @@ class Matrix:
         The number of columns in the first matrix must be equal to the number of rows in the second matrix.
         TODO: implement
         """
-        pass
+        if self._columns != other._rows:
+            raise ValueError("The width of the first matrix is the same as the height of the second matrix")
 
+        return [[sum(a * b for a, b in zip(self_row, other_col)) for other_col in zip(*other._matrix)]
+                for self_row in self._matrix]
 
     @property
     def trace(self):
@@ -90,6 +104,10 @@ class Matrix:
         Find the trace of the matrix.
         TODO: implement
         """
+        if self._rows != self._columns:
+            raise ValueError("Cannot calculate the trace of a non-square matrix.")
+
+        return sum(self._matrix[i][i] for i in range(self._rows))
 
     @property
     def determinant(self):
@@ -97,8 +115,7 @@ class Matrix:
         Check if the matrix is square, find the determinant.
         TODO: implement
         """
+        if self._rows != self._columns:
+            raise (ValueError, "Cannot calculate determinant of non-square matrix.")
 
-
-matrix1 = Matrix(list=[[1, 2], [3, 1], [3, 4]])
-matrix2 = Matrix(list=[[4, 1], [8, 2], [1, 1]])
-print(matrix1 + matrix2)
+        return np.linalg.det(self._matrix)
